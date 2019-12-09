@@ -1,0 +1,14 @@
+{
+    "name": "igorkrysov/chat",
+    "description": "Chat system based on websockets",
+    "type": "library",
+    "require": {
+        "beyondcode/laravel-websockets": "^1.3"
+    },
+    "authors": [
+        {
+            "name": "Igor Krysov",
+            "email": "igorkrysov@mail.ru"
+        }
+    ]
+}
