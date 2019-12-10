@@ -25,7 +25,7 @@ class ChatServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__ . "/routes/web.php");
         $this->loadMigrationsFrom(__DIR__ . '/db/migrations');
-        $this->loadViewsFrom(__DIR__ . "/views", "chat");
+        $this->loadViewsFrom(__DIR__ . "/resources/views", "chat");
 
         $this->publishes([
             __DIR__.'/views' => resource_path('views/vendor/techsmart/chat'),
@@ -33,5 +33,9 @@ class ChatServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/db/migrations' => database_path('migrations')
         ], 'migrations');
+        $this->publishes([
+            __DIR__ . '/../resources/assets' =>
+            resource_path('assets/vendor/techsmart/chat'
+        )], 'vue-components');
     }
 }

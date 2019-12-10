@@ -10,6 +10,10 @@ use Techsmart\Chat\MessageFile;
 
 class ChatController {
 
+    public function index() {        
+        return view("chat::chats");
+    }
+
     public function loadChats(Request $request) { 
         $chats = Chat::chats();
 
@@ -17,7 +21,6 @@ class ChatController {
             return response()->json(['status' => true, 'chats' => $chats]);
         }
 
-        return view("chat::chats", ['chats' => $chats]);
     }
     
     public function loadMessages(Request $request, $chatId) {
