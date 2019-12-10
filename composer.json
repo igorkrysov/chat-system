@@ -10,5 +10,10 @@
             "name": "Igor Krysov",
             "email": "igorkrysov@mail.ru"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "Techsmart\\Chat\\": "src/"
+        }
+    }
 }
