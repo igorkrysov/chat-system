@@ -16,8 +16,8 @@ class CreateTypeChatsTable extends Migration
         Schema::create('types_of_chat', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string("type");
-            $table->unsignedBigInteger('chat_id')->nullable();  
-            $table->foreign('chat_id')->references('id')->on('chats')->onDelete('set null');
+            // $table->unsignedBigInteger('chat_id')->nullable();  
+            // $table->foreign('chat_id')->references('id')->on('chats')->onDelete('set null');
         });
     }
 

@@ -13,7 +13,7 @@ class ChatServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->make('Techsmart\Chat\Http\Controllers\ChatController');
     }
 
     /**
@@ -28,13 +28,13 @@ class ChatServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . "/resources/views", "chat");
 
         $this->publishes([
-            __DIR__.'/views' => resource_path('views/vendor/techsmart/chat'),
+            __DIR__.'/resources/views' => resource_path('views/vendor/techsmart/chat'),
         ]);
         $this->publishes([
             __DIR__.'/db/migrations' => database_path('migrations')
         ], 'migrations');
         $this->publishes([
-            __DIR__ . '/../resources/assets' =>
+            __DIR__ . '/resources/assets' =>
             resource_path('assets/vendor/techsmart/chat'
         )], 'vue-components');
     }
