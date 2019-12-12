@@ -1,6 +1,6 @@
 <?php
 
-namespace Techsmart\Chat\Events;
+namespace Techsmart\Chat\Http\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;

@@ -1,13 +1,10 @@
 <?php
 
-namespace App;
+namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
-use Auth;
 use App\User;
-use App\Message;
-use App\Proposal;
-use App\Order;
+use Auth;
 
 class Chat extends Model
 {

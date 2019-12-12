@@ -1,3 +1,3 @@
-Vue.component('example-component1', require('./components/example-component1.vue'));
-Vue.component('example-component2', require('./components/example-component2.vue'));
+Vue.component('chat-element', require('./components/Chats.vue').default);
+
 window.packageNameEvent = new Vue();

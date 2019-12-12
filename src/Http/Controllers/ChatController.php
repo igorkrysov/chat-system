@@ -4,14 +4,24 @@ namespace Techsmart\Chat\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Techsmart\Chat\Chat;
-use Techsmart\Chat\Message;
-use Techsmart\Chat\MessageFile;
+use Techsmart\Chat\Http\Chat;
+use Techsmart\Chat\Http\Message;
+use Techsmart\Chat\Http\MessageFile;
+use App\User;
 
 class ChatController {
 
     public function index() {        
         return view("chat::chats");
+    }
+
+    public function loadUsers(Request $request) { 
+        $users = User::all();
+
+        if ($request->ajax()) {
+            return response()->json(['status' => true, 'users' => $users]);
+        }
+
     }
 
     public function loadChats(Request $request) { 

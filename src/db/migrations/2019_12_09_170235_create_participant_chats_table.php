@@ -13,7 +13,7 @@ class CreateParticipantChatsTable extends Migration
      */
     public function up()
     {
-        Schema::create('chat_participant', function (Blueprint $table) {
+        Schema::create('participant_chats', function (Blueprint $table) {
             $table->bigIncrements('id');            
             $table->unsignedBigInteger('chat_id')->nullable();  
             $table->unsignedBigInteger('user_id')->nullable();  
@@ -31,6 +31,6 @@ class CreateParticipantChatsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chat_participant');
+        Schema::dropIfExists('participant_chats');
     }
 }

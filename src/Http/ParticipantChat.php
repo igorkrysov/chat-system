@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
 use App\User;

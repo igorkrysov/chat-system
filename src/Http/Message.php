@@ -1,11 +1,11 @@
 <?php
 
-namespace App;
+namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
-use App\Events\NewMessage;
 use Illuminate\Http\Request;
+use Techsmart\Chat\Events\NewMessage;
 use Auth;
 use DB;
 
