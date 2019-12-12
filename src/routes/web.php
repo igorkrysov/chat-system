@@ -17,6 +17,7 @@ Route::prefix('api')->group(function () {
 });
 
 Route::group(['middleware' => ['web', 'auth']], function () {
+    Route::post("create-chat", "Techsmart\Chat\Http\Controllers\ChatController@createChat");
     Route::get("chats", "Techsmart\Chat\Http\Controllers\ChatController@index");
     Route::get("load-users", "Techsmart\Chat\Http\Controllers\ChatController@loadUsers");
     Route::get("load-chats", "Techsmart\Chat\Http\Controllers\ChatController@loadChats");

@@ -2,18 +2,21 @@
     <div class="root">
         <div class="chats">
             <div class="chat">
-                <div class="form-group">
-                    <select class="custom-select" multiple size="1" v-model="newChat">
-                        <option v-for="user in users" v-bind:key="user.id" :value="user.id" multiple>{{ user.name }}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" class="form-control" id="name" :value="name" placeholder="name" required>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-success btn-create" @click="createChat()"  :disabled="newChat.length < 1">create chat</button>
-                </div>
+                <form>
+                    <div class="form-group">
+                        <label for="participants">Chat participants:</label>
+                        <select class="custom-select" id="participants" multiple size="1" v-model="participants">
+                            <option v-for="user in users" v-bind:key="user.id" :value="user.id" multiple>{{ user.name }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Chat name:</label>
+                        <input type="text" class="form-control" id="name" v-model="chatName" placeholder="name" required>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success btn-create" @click.prevent="createChat()"  :disabled="participants.length < 1 || chatName == ''">create chat</button>
+                    </div>
+                </form>
             </div>
             <div class="chat" v-for="chat in chats" v-bind:key="chat.id" @click.prevent="loadMessages">
                 {{ chat.name }}
@@ -55,8 +58,8 @@ export default {
             chats: [],
             messages: [],
             message: "",
-            newChat: [],
-            name: ''
+            participants: [],
+            chatName: ""
         }
     },
     mounted() {
@@ -65,8 +68,25 @@ export default {
     },
     methods: {
         createChat() {
-            if (this.newChat.lenght > 0) {
+            console.log("1");
+            if (this.participants.length > 0 && this.chatName !== "") {
+                console.log("12");
+                let data = {
+                    "name": this.chatName,
+                    "participants": this.participants,
 
+                }
+                axios.post('/create-chat', data)
+                    .then((response) => {
+                        if (response.data.status) {
+                            // this.users = response.data.users
+                            this.chatName !== ""
+                            this.participants = []
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
             }
         },
         loadUsers() {

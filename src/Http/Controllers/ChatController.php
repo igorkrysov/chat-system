@@ -8,6 +8,7 @@ use Techsmart\Chat\Http\Chat;
 use Techsmart\Chat\Http\Message;
 use Techsmart\Chat\Http\MessageFile;
 use App\User;
+use Auth;
 
 class ChatController {
 
@@ -16,7 +17,7 @@ class ChatController {
     }
 
     public function loadUsers(Request $request) { 
-        $users = User::all();
+        $users = User::where('id', '!=', Auth::User()->id)->get();
 
         if ($request->ajax()) {
             return response()->json(['status' => true, 'users' => $users]);
@@ -84,5 +85,11 @@ class ChatController {
         $chats = Chat::findMessage($request);
 
         return response()->json(['chats' => $chats]);
+    }
+
+    public function createChat(Request $request) {
+        $chat = Chat::createChat($request);
+
+        return response()->json(['status' => true, 'chat' => $chat]);
     }
 }

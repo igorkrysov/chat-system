@@ -3,6 +3,7 @@
 namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use App\User;
 use Auth;
 
@@ -20,12 +21,24 @@ class Chat extends Model
         return $this->hasOne('App\User', 'id', 'admin_id');
     }
 
-    public static function createChat($typeId, $adminId, $chatName = '') {
+    public static function createChat(Request $request) {
+        $request->validate([
+            'name' => 'required',
+            'participants' => 'required|array'
+        ]);
+
         $chat = new self();
-        $chat->type_id = $typeId;
-        $chat->name = $chatName;
-        $chat->admin_id = $adminId;
-        $chat->save();        
+        $chat->type_chat_id = null;
+        $chat->name = $request->name;
+        $chat->admin_id = Auth::User()->id;
+        $chat->save();
+
+        foreach($request->participants as $participant) {
+            ParticipantChat::create(["chat_id" => $chat->id, "user_id" => $participant]);
+        }
+        ParticipantChat::create(["chat_id" => $chat->id, "user_id" => Auth::User()->id]);
+
+        return $chat;
     }
 
     public static function chats() {        
@@ -53,12 +66,12 @@ class Chat extends Model
 
 
 
-    public static function findMessage(Reqeust $request ) {
-        $reqeust->validate([
+    public static function findMessage(Request $request) {
+        $request->validate([
             'search' => 'required'
         ]);
 
-        $search = $reqeust->search;
+        $search = $request->search;
         $chats = Chat::chats();
         $chatIds = $chats->pluck(['id']);
 
