@@ -9,7 +9,7 @@ use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Techsmart\Chat\Message;
+use Techsmart\Chat\Http\Message;
 use App\User;
 
 class NewMessage implements ShouldBroadcast

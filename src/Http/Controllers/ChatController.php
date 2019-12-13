@@ -45,10 +45,10 @@ class ChatController {
     }
     
     public function sendMessage(Request $request) {
-        $message = Message::sendMessage();
+        $message = Message::sendMessage($request);
 
         if ($request->ajax()) {
-            return response()->json(['status' => true, 'messages' => $message]);
+            return response()->json(['status' => true, 'message' => $message]);
         }
 
         return response()->json(['status' => true, 'message' => $message, 'createdAt' => $message->created_at]);
@@ -57,7 +57,7 @@ class ChatController {
     public function uploaFile(Request $request) {
         $file = MessageFile::uploadFile($request);
 
-        return response()->json(['file' => $file]);
+        return response()->json(['status' => true, 'file' => $file]);
     }
 
     public function deleteMessage($messageId) {
@@ -82,13 +82,26 @@ class ChatController {
     }
 
     public function findMessage(Request $request) {
-        $chats = Chat::findMessage($request);
+        $request->validate([
+            'search' => 'required'
+        ]);
+
+        $chats = Chat::findMessage($request->search);
 
         return response()->json(['chats' => $chats]);
     }
 
     public function createChat(Request $request) {
-        $chat = Chat::createChat($request);
+        $request->validate([
+            'name' => 'required',
+            'participants' => 'required|array'
+        ]);
+
+        $name = $request->name;
+        $participants[] = Auth::User()->id;    
+        $type = null;
+        $adminId = Auth::User()->id;
+        $chat = Chat::createChat($name, $participants, $type, $adminId);
 
         return response()->json(['status' => true, 'chat' => $chat]);
     }

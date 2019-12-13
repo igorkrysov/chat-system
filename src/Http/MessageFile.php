@@ -28,7 +28,7 @@ class MessageFile extends Model
                 $name = time() . '.png';
                 $storePath = 'img/msg/' . date('m.Y', time()) . '/';
                 $file->storeAs('public/' . $storePath, $name);
-                $photo = new MessagePhoto();
+                $photo = new self();
                 $photo->file = $storePath . $name;
                 $photo->save();
                 

@@ -5,7 +5,7 @@ namespace Techsmart\Chat\Http;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-use Techsmart\Chat\Events\NewMessage;
+use Techsmart\Chat\Http\Events\NewMessage;
 use Auth;
 use DB;
 
@@ -17,11 +17,11 @@ class Message extends Model
      * Get user
      */
     public function user() {
-        return $this->hasOne('App\User', 'id', 'user_id');
+        return $this->hasOne('App\User', 'id', 'src_id');
     }
 
-    public function photoes() {
-        return $this->hasMany('App\MessagePhoto', 'message_id', 'id');    
+    public function files() {
+        return $this->hasMany('Techsmart\Chat\Http\MessageFile', 'message_id', 'id');    
     }
 
     public static function sendMessage(Request $request) {
@@ -43,19 +43,19 @@ class Message extends Model
         $message = $chat->addMessage(Auth::User()->id, $request->message);
 
         $message->createdAt = $message->created_at;
-        if ($request->has('photoes')) {
-            foreach ($request->photoes as $photo) {
-                MessagePhoto::setMessageId($photo['id'], $message->id);
+        if ($request->has('files_')) {
+            foreach ($request->files_ as $file) {
+                MessageFile::setMessageId($file['id'], $message->id);
             }
         }
-        $message->photoes;
-        broadcast(new NewMessage($message))->toOthers();
+        $message->files;
+        $message->user;
         
         return $message;
     }
 
     public static function loadMessages($chatId) {
-        $messages = self::where('chat_id', $chatId)->with(['photoes'])->get();
+        $messages = self::where('chat_id', $chatId)->with(['files', 'user'])->get();
         foreach ($messages as $key => $message) {
             $messages[$key]->createdAt = $message->created_at;
         }
@@ -70,7 +70,7 @@ class Message extends Model
 
     public static function addMessage($chatId, $from, $message) {
         $message = self::create(['chat_id' => $chatId, 'src_id' => $from, 'message' => $message]);
-        broadcast(new NewMessage($mess))->toOthers();
+        broadcast(new NewMessage($message))->toOthers();
 
         return $message;
     }

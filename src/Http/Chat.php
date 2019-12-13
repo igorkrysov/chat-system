@@ -21,22 +21,16 @@ class Chat extends Model
         return $this->hasOne('App\User', 'id', 'admin_id');
     }
 
-    public static function createChat(Request $request) {
-        $request->validate([
-            'name' => 'required',
-            'participants' => 'required|array'
-        ]);
-
+    public static function createChat($name, $participants, $type, $adminId) {
         $chat = new self();
-        $chat->type_chat_id = null;
-        $chat->name = $request->name;
-        $chat->admin_id = Auth::User()->id;
+        $chat->type_chat_id = $type;
+        $chat->name = $name;
+        $chat->admin_id = $adminId;
         $chat->save();
 
-        foreach($request->participants as $participant) {
+        foreach($participants as $participant) {
             ParticipantChat::create(["chat_id" => $chat->id, "user_id" => $participant]);
         }
-        ParticipantChat::create(["chat_id" => $chat->id, "user_id" => Auth::User()->id]);
 
         return $chat;
     }
@@ -66,15 +60,10 @@ class Chat extends Model
 
 
 
-    public static function findMessage(Request $request) {
-        $request->validate([
-            'search' => 'required'
-        ]);
-
-        $search = $request->search;
+    public static function findMessage($search) {
+        $search = $search;
         $chats = Chat::chats();
         $chatIds = $chats->pluck(['id']);
-
         $messages = Message::whereIn('chat_id', $chatIds)->where('message', 'like', "%$search%")->get();
 
         $ch = [];
