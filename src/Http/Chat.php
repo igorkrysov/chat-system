@@ -63,7 +63,7 @@ class Chat extends Model
     public static function blockChat($chatId) {
         $chat = Chat::find($chatId);
         if ($chat) {
-            $chat->is_blocked = true;
+            $chat->is_blocked = !$chat->is_blocked;
             $chat->save();
         }
     }
@@ -80,9 +80,7 @@ class Chat extends Model
 
         return $message;
     }
-
-
-
+    
     public static function findMessage($search) {
         $search = $search;
         $chats = Chat::chats();
@@ -98,5 +96,16 @@ class Chat extends Model
             $chats[] = $c;
         }
         return $chats;
+    }
+
+    public function addParticipantToChat($chatId, $participants = []) {
+        foreach($participants as $participant) {
+            ParticipantChat::firstOrCreate(['chat_id' => $chatid, 'user_id' => $participant]);
+        }
+    }
+
+
+    public function deleteParticipantFromChat($chatId, $participants = []) {
+        ParticipantChat::where('chat_id', $chatid)->whereIn('user_id', $participants)->delete();
     }
 }

@@ -32,9 +32,8 @@ class ChatController {
         if ($request->ajax()) {
             return response()->json(['status' => true, 'chats' => $chats]);
         }
-
     }
-    
+
     public function loadMessages(Request $request, $chatId) {
         $messages = Message::loadMessages($chatId);
 
@@ -68,7 +67,9 @@ class ChatController {
 
     public function uploaFile(Request $request) {        
         $file = MessageFile::uploadFile($request);
-
+        if (is_null($file)) {
+            return response()->json(['status' => false, 'message' => 'Bad format']);    
+        }
         return response()->json(['status' => true, 'file' => $file]);
     }
 
@@ -115,11 +116,18 @@ class ChatController {
         ]);
 
         $name = $request->name;
+        $participants = $request->participants;
         $participants[] = Auth::User()->id;    
         $type = null;
         $adminId = Auth::User()->id;
         $chat = Chat::createChat($name, $participants, $type, $adminId);
 
         return response()->json(['status' => true, 'chat' => $chat]);
+    }
+
+    public function blockChat($chatId) {
+        Chat::blockChat($chatId);
+
+        return response()->json(['status' => true]);
     }
 }

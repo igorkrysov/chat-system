@@ -11,7 +11,7 @@ class MessageFile extends Model
     //
     protected $fillable = ['message_id', 'file'];
 
-    protected static $extensions = ['jpg', 'jpeg', 'png'];
+    protected static $extensions = ['jpg', 'jpeg', 'png', 'docx'];
 
     public static function setMessageId($fileId, $messageId) {
         $file = self::find($fileId);
@@ -25,7 +25,7 @@ class MessageFile extends Model
         if($request->has('file')) {
             if (in_array($request->file->getClientOriginalExtension(), self::$extensions)) {
                 $file = $request->file('file');
-                $name = time() . '.png';
+                $name = time() . '.' . $request->file->getClientOriginalExtension();
                 $storePath = 'img/msg/' . date('m.Y', time()) . '/';
                 $file->storeAs('public/' . $storePath, $name);
                 $photo = new self();
@@ -39,7 +39,7 @@ class MessageFile extends Model
                 return $photo;
             }
 
-            return "Error format";
+            return null;
             
         }
 

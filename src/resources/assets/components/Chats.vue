@@ -23,63 +23,67 @@
             </div>
         </div>
         <div class="message-data">
+            <div class="admin-pannel" v-if="activeChatId > 0 && activeChat.admin_id == userId">
+                <button class="btn btn-info" @click.prevent="lock">{{ !activeChat.is_blocked ? 'to block' : 'to unblock'}}</button>
+            </div>
             <div class="messages">
-            <div class="message-row" :class="{own : message.src_id == userId}" v-for="message in messages" v-bind:key="message.id">
-                <div class="message">
-                    <div class="title-row">
-                        <div class="title">
-                            {{ from(message) }}
+                <div class="message-row" :class="{own : message.src_id == userId}" v-for="message in messages" v-bind:key="message.id">
+                    <div class="message">
+                        <div class="title-row">
+                            <div class="title">
+                                {{ from(message) }}
+                            </div>
+                            <div class="date">
+                                {{ message.updated_at }}
+                                <span v-if="isEditable(message)">
+                                    <a @click.prevent="edit(message)">Edit</a>
+                                </span>
+                                <span v-if="isEditable(message)">
+                                    <a @click.prevent="remove(message)">Remove</a>
+                                </span>
+                            </div>
                         </div>
-                        <div class="date">
-                            {{ message.updated_at }}
-                            <span v-if="isEditable(message)">
-                                <a @click.prevent="edit(message)">Edit</a>
-                            </span>
-                            <span v-if="isEditable(message)">
-                                <a @click.prevent="remove(message)">Remove</a>
-                            </span>
+                        <div class="text">{{ message.message }}</div>
+                        <div class="files">
+                            <div class="file" v-for="file in message.files" v-bind:key="file.id">
+                                <a :href="'/' + file.file">
+                                    <img :src="typeFile(file)" alt="">
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="text">{{ message.message }}</div>
+                </div>
+            </div>
+            <div class="new-message">
+                <div class="form-group">
+                    <textarea v-model="message"
+                                @keydown.enter.exact.prevent
+                                @keyup.enter.exact="sendMessage"
+                                @keydown.enter.shift.exact="newMessageLine"
+                                class="form-control"
+                                :readonly="activeChatId < 0 ||  activeChat.is_blocked == 1" 
+                                ></textarea>
+                </div>
+                <div class="form-group">
                     <div class="files">
-                        <div class="file" v-for="file in message.files" v-bind:key="file.id">
+                        <div class="file" v-for="file in files" v-bind:key="file.id">
                             <a :href="'/' + file.file">
                                 <img :src="typeFile(file)" alt="">
                             </a>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="new-message">
-            <div class="form-group">
-                <textarea v-model="message"
-                            @keydown.enter.exact.prevent
-                            @keyup.enter.exact="sendMessage"
-                            @keydown.enter.shift.exact="newMessageLine"
-                            class="form-control"
-                            :readonly="activeChatId < 0" 
-                            ></textarea>
-            </div>
-            <div class="form-group">
-                <div class="files">
-                    <div class="file" v-for="file in files" v-bind:key="file.id">
-                        <a :href="'/' + file.file">
-                            <img :src="typeFile(file)" alt="">
-                        </a>
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" accept=".jpg, .jpeg, .png" name="img" ref="photo" 
+                        v-on:change="uploadFile()" :disabled="activeChatId < 0 ||  activeChat.is_blocked == 1">
+                        <label class="custom-file-label" for="validatedCustomFile">Choose file...</label>
+                        <div class="invalid-feedback">Example invalid custom file feedback</div>
                     </div>
                 </div>
+                
+                <button class="btn btn-primary" :disabled="activeChatId < 0 || activeChat.is_blocked == 1" @click.prevent="sendMessage">Send</button>
             </div>
-            <div class="form-group">
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input" accept=".jpg, .jpeg, .png" name="img" ref="photo" v-on:change="uploadFile()" :disabled="activeChatId < 0">
-                    <label class="custom-file-label" for="validatedCustomFile">Choose file...</label>
-                    <div class="invalid-feedback">Example invalid custom file feedback</div>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" :disabled="activeChatId < 0" @click.prevent="sendMessage">Send</button>
-        </div>
         </div>
         
     </div>
@@ -97,6 +101,7 @@ export default {
             participants: [],
             chatName: "",
             activeChatId: -1,
+            activeChat: -1,
             editMessageId: 0
         }
     },
@@ -106,10 +111,23 @@ export default {
     mounted() {
         this.loadUsers();
         this.loadChats();
+        this.listen();
     },
     methods: {
+        lock() {
+            this.activeChatId;
+            axios.post('/block-chat/' +  this.activeChatId, {})
+                .then((response) => {
+                    if (response.data.status) {
+                        this.activeChat.is_blocked = !this.activeChat.is_blocked;
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        },
         remove(message) {
-        axios.delete('/delete-message/' + message.id)
+            axios.delete('/delete-message/' + message.id)
                 .then((response) => {
                     if (response.data.status) {
                         let index = this.messages.indexOf(message);
@@ -141,8 +159,10 @@ export default {
                 return "/storage/" + file.file
             }
             if (ext == "doc" || ext == "docx") {
-                return "'background-image': 'url(word.png)'";
+                return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMjYiIGhlaWdodD0iMjYiCnZpZXdCb3g9IjAgMCAyNiAyNiIKc3R5bGU9IiBmaWxsOiMwMDAwMDA7Ij48cGF0aCBkPSJNIDE1IDAgTCAwIDIuODc1IEwgMCAyMy4xMjUgTCAxNSAyNiBaIE0gMTYgMyBMIDE2IDUuOTY4NzUgTCAyMy4wMzEyNSA1Ljk2ODc1IEwgMjMuMDMxMjUgOCBMIDE2IDggTCAxNiAxMCBMIDIzIDEwIEwgMjMgMTIgTCAxNiAxMiBMIDE2IDE0IEwgMjMgMTQgTCAyMyAxNiBMIDE2IDE2IEwgMTYgMTggTCAyMyAxOCBMIDIzIDIwIEwgMTYgMjAgTCAxNiAyMyBMIDI1LjE1NjI1IDIzIEMgMjUuNjE3MTg4IDIzIDI2IDIyLjYwNTQ2OSAyNiAyMi4xMjUgTCAyNiAzLjg3NSBDIDI2IDMuMzk0NTMxIDI1LjYxNzE4OCAzIDI1LjE1NjI1IDMgWiBNIDEuOTY4NzUgNy45Mzc1IEwgMy44NzUgNy45Mzc1IEwgNSAxNC42ODc1IEMgNS4wNDY4NzUgMTQuOTcyNjU2IDUuMDcwMzEzIDE1LjM1OTM3NSA1LjA5Mzc1IDE1Ljg0Mzc1IEwgNS4xMjUgMTUuODQzNzUgQyA1LjE0MDYyNSAxNS40ODA0NjkgNS4xOTE0MDYgMTUuMDg1OTM4IDUuMjgxMjUgMTQuNjU2MjUgTCA2LjcxODc1IDcuOTM3NSBMIDguNTkzNzUgNy45Mzc1IEwgOS45MDYyNSAxNC43NSBDIDkuOTUzMTI1IDE1IDkuOTk2MDk0IDE1LjMzNTkzOCAxMC4wMzEyNSAxNS44MTI1IEMgMTAuMDQ2ODc1IDE1LjQ0MTQwNiAxMC4wOTM3NSAxNS4wNzAzMTMgMTAuMTU2MjUgMTQuNjg3NSBMIDExLjI1IDcuOTM3NSBMIDEzLjAzMTI1IDcuOTM3NSBMIDEwLjkzNzUgMTguMDYyNSBMIDkgMTguMDYyNSBMIDcuNjg3NSAxMS41NjI1IEMgNy42MTcxODggMTEuMjIyNjU2IDcuNTc4MTI1IDEwLjg1NTQ2OSA3LjU2MjUgMTAuNDM3NSBMIDcuNTMxMjUgMTAuNDM3NSBDIDcuNSAxMC44OTg0MzggNy40Njg3NSAxMS4yNjU2MjUgNy40MDYyNSAxMS41NjI1IEwgNi4wNjI1IDE4LjA2MjUgTCA0LjAzMTI1IDE4LjA2MjUgWiI+PC9wYXRoPjwvc3ZnPg=="
             }
+
+            return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAA3UlEQVRIie2VPw/BQBiHHyI6aaSRGMQH8E2s0ojJZCT9cD4Bk0oEk4iR1YTFVEPfph3aU9frVE/y5ob73fP2+u+gCliAB/jAS8oHFkCzqLwHHIEgow6S0cJKyK+AC7SkRsBZ5vZo7sRLyJ2UeQe4SWau02Ari11FZiyZjU6DpyxuKTK2ZB5ZgYZisUocYcn4zgrUc0hUDGU8FfSk0iV+yFPT8jawE/ka9a3+GZv4DbsQ7sQYNWBJ/H30TcoBJiK/AwPTcoCVNJiVIYfwygOgU1aDP1+JDprcFP0XVYAPYEI0b/Y+EU4AAAAASUVORK5CYII=";
         },
         from(message) {
             return message.src_id == this.userId ? "Вы писали: " : message.user.name + " писал(а):";
@@ -192,6 +212,11 @@ export default {
         },
         loadMessages(chatId) {
             this.activeChatId = chatId
+            this.chats.forEach(element => {
+                if (element.id == chatId) {
+                    this.activeChat = element
+                }
+            })
 
             axios.get('/load-messages/' + chatId)
                 .then((response) => {
@@ -279,6 +304,7 @@ export default {
                 });
         },
         listen() {
+            console.log("listen")
             Echo.join('chat.' + this.userId)
                 .listen('NewMessage', (e) => {
                     if (e.messsage.chat_id == this.activeChatId) {
@@ -416,5 +442,8 @@ export default {
             width: 80px;
             height: 80px;
         }
+    }
+    .admin-pannel {
+        padding: 10px;;
     }
 </style>

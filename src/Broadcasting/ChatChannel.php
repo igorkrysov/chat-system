@@ -25,6 +25,6 @@ class ChatChannel
      */
     public function join(User $user, $userId)
     {
-        return $user->id === $userId;
+        return $user->id == $userId;
     }
 }
