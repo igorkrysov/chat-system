@@ -33,7 +33,6 @@ class NewMessage implements ShouldBroadcast
         $this->message = $message;
         $this->message->createdAt = $message->created_at;
         $this->createdAt = $message->created_at;
-        // $this->countMessages = Message::countCommonUnreadMessages($this->message->dst_id);  
         $this->chatId = $message->chat_id;      
     }
 
@@ -44,7 +43,10 @@ class NewMessage implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        $channels[] = new PresenceChannel('chats.' . $this->message->chat_id);
+        $channels = [];
+        foreach ($this->message->chat->participants as $user) {
+            $channels[] = new PresenceChannel('chat.' . $user->id);
+        }
 
         return $channels;
     }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Techsmart\Chat\Http\Chat;
 use Techsmart\Chat\Http\Message;
 use Techsmart\Chat\Http\MessageFile;
+use Illuminate\Support\Facades\Validator;
 use App\User;
 use Auth;
 
@@ -45,7 +46,18 @@ class ChatController {
     }
     
     public function sendMessage(Request $request) {
-        $message = Message::sendMessage($request);
+        $rules =[
+            'chatId' => 'required|integer',
+            'message' => 'required|string',
+            'files_' => 'nullable|array',            
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->messages()]);
+        }
+
+        $message = Message::sendMessage($request->chatId, $request->message, $request->files_);
 
         if ($request->ajax()) {
             return response()->json(['status' => true, 'message' => $message]);
@@ -54,22 +66,27 @@ class ChatController {
         return response()->json(['status' => true, 'message' => $message, 'createdAt' => $message->created_at]);
     }
 
-    public function uploaFile(Request $request) {
+    public function uploaFile(Request $request) {        
         $file = MessageFile::uploadFile($request);
 
         return response()->json(['status' => true, 'file' => $file]);
     }
 
     public function deleteMessage($messageId) {
-        Message::delete($messageId);
+        Message::destroy($messageId);
         MessageFile::where('message_id', $messageId)->delete();
         
-        return resonse()->json(['status' => true]);
+        return response()->json(['status' => true]);
     }
 
     public function updateMessage(Request $request, $messageId) {
-        if (Message::updateMessage($request, $messageId)) {
-            return response()->json(['status' => true, 'message' => 'Сообщение успешно обновлено!']);
+        $request->validate([
+            'message' => "required|string",
+            'files_' => 'nullable|array',  
+        ]);
+
+        if (($message = Message::updateMessage($request->message, $messageId, $request->files_))) {
+            return response()->json(['status' => true, 'message' => $message]);
         }
 
         return response()->json(['status' => false, 'message' => 'Сообщение не моежет быть обновлено!']); 

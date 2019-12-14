@@ -3,12 +3,25 @@
 namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use App\User;
 use Auth;
 
 class Chat extends Model
 {
+    protected $appends = ["isNewMessage", "online"];
+
+    public $isNewMessage = false;
+    public $online = false;
+
+    protected function getIsNewMessageAttribute() {
+        $participant = ParticipantChat::where('chat_id', $this->id)->where('user_id', Auth::User()->id)->first();        
+        $this->isNewMessage = !$participant->is_read;
+        return $this->isNewMessage;
+    }
+    protected function getOnlineAttribute() {
+        return $this->online;
+    }
+
     public function user() {
         return $this->hasOne('App\User', 'id', 'user_id');
     }
@@ -19,6 +32,10 @@ class Chat extends Model
 
     public function admin() {
         return $this->hasOne('App\User', 'id', 'admin_id');
+    }
+
+    public function participants() {
+        return $this->hasMany('Techsmart\Chat\Http\ParticipantChat', 'id', 'chat_id');
     }
 
     public static function createChat($name, $participants, $type, $adminId) {
@@ -54,6 +71,12 @@ class Chat extends Model
     public function addMessage($from, $message) {
         $message = Message::addMessage($this->id, $from, $message);
         $this->touch();
+        foreach ($this->participants as $participant) {
+            if ($participant->user_id != Auth::User()->id) {
+                $participant->is_read    = false;
+                $participant->save();
+            }
+        }
 
         return $message;
     }

@@ -18,7 +18,7 @@
                     </div>
                 </form>
             </div>
-            <div class="chat" v-for="chat in chats" v-bind:key="chat.id" @click.prevent="loadMessages(chat.id)" :class="{active : activeChatId == chat.id}">
+            <div class="chat" v-for="chat in chats" v-bind:key="chat.id" @click.prevent="loadMessages(chat.id)" :class="{active : activeChatId == chat.id, 'new-message': chat.isNewMessage, 'online': chat.online}">
                 {{ chat.name }}
             </div>
         </div>
@@ -32,6 +32,12 @@
                         </div>
                         <div class="date">
                             {{ message.updated_at }}
+                            <span v-if="isEditable(message)">
+                                <a @click.prevent="edit(message)">Edit</a>
+                            </span>
+                            <span v-if="isEditable(message)">
+                                <a @click.prevent="remove(message)">Remove</a>
+                            </span>
                         </div>
                     </div>
                     <div class="text">{{ message.message }}</div>
@@ -90,7 +96,8 @@ export default {
             message: "",
             participants: [],
             chatName: "",
-            activeChatId: -1
+            activeChatId: -1,
+            editMessageId: 0
         }
     },
     props: [
@@ -101,10 +108,34 @@ export default {
         this.loadChats();
     },
     methods: {
+        remove(message) {
+        axios.delete('/delete-message/' + message.id)
+                .then((response) => {
+                    if (response.data.status) {
+                        let index = this.messages.indexOf(message);
+                        this.messages.splice(index, 1)
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        },
+        edit(message) {
+            this.editMessageId = message.id;
+            this.message = message.message;
+            this.files = message.files;
+        },
+        isEditable(message) {
+            if (message.isEdit == undefined || message.src_id != this.userId) {
+                return false
+            }
+            let now = new Date();
+            let seconds = (now.getTime() - message.isEdit.getTime()) / 1000            
+            return seconds > 10 ? false : true;
+        },
         typeFile(file) {
             let re = /(?:\.([^.]+))?$/;
             let ext = re.exec(file.file)[1];
-            console.log("file: " + file.file + " ext: " + ext);
             
             if (ext == "png" || ext == "jpeg" || ext == "jpg") {
                 return "/storage/" + file.file
@@ -114,7 +145,6 @@ export default {
             }
         },
         from(message) {
-            console.log(message)
             return message.src_id == this.userId ? "Вы писали: " : message.user.name + " писал(а):";
         },
         createChat() {
@@ -167,6 +197,12 @@ export default {
                 .then((response) => {
                     if (response.data.status) {
                         this.messages = response.data.messages
+                        let that = this
+                        this.chats.forEach(element => {
+                            if (element.id == chatId) {
+                                element.isNewMessage = false;
+                            }
+                        });
                     }
                 })
                 .catch(function (error) {
@@ -175,7 +211,7 @@ export default {
 
         },
         sendMessage() {
-            if (this.activeChatId > 0 && this.message != "") {
+            if (this.activeChatId > 0 && this.message != "" && this.editMessageId == 0) {
                 let data = {
                     "chatId": this.activeChatId,
                     "message": this.message,
@@ -185,6 +221,7 @@ export default {
                 axios.post('/send-message', data)
                     .then((response) => {
                         if (response.data.status) {
+                            response.data.message.isEdit = new Date()
                             this.messages.push(response.data.message)
                             this.message = ""
                             this.files = []
@@ -193,6 +230,32 @@ export default {
                     .catch(function (error) {
                         console.log(error);
                     });                
+            }
+            if (this.activeChatId > 0 && this.message != "" && this.editMessageId != 0) {
+                let data = {
+                    "message": this.message,
+                    "files_": this.files
+
+                }
+                axios.put('/update-message/' + this.editMessageId, data)
+                    .then((response) => {
+                        if (response.data.status) {
+                            response.data.message.isEdit = new Date()
+                            let that = this
+                            for (var index in this.messages) {
+                                console.log(this.messages[index], that.editMessageId)
+                                if (this.messages[index].id == that.editMessageId) {
+                                    this.messages[index] = response.data.message
+                                }
+                            }
+                            this.message = ""
+                            this.files = []
+                            this.editMessageId = 0;
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
             }
         },
         newMessageLine() {
@@ -214,6 +277,21 @@ export default {
                 .catch(err => {
                     console.log(err);
                 });
+        },
+        listen() {
+            Echo.join('chat.' + this.userId)
+                .listen('NewMessage', (e) => {
+                    if (e.messsage.chat_id == this.activeChatId) {
+                        this.messages.push(e.message);
+                    } else {
+                        this.chats.forEach(element => {
+                            if (element.id == e.message.chat_id) {
+                                element.isNewMessage = true;
+                            }
+                        });
+                    }
+                        
+                })
         }
     }
 }
@@ -247,6 +325,31 @@ export default {
         }
         &.active {
             background: rgb(223, 223, 223);
+        }
+        &.new-message::after {
+            content: '';
+            display: inline-block;
+            margin-top: 9px;
+            margin-left: 10px;
+            width: 5px;
+            height: 5px;
+            -moz-border-radius: 7.5px;
+            -webkit-border-radius: 7.5px;
+            border-radius: 7.5px;
+            background-color: #69b6d5;
+        }
+
+        &.online::before {
+            content: '';
+            display: inline-block;
+            margin-top: 9px;
+            margin-right: 10px;
+            width: 5px;
+            height: 5px;
+            -moz-border-radius: 7.5px;
+            -webkit-border-radius: 7.5px;
+            border-radius: 7.5px;
+            background-color: #69d592;
         }
     }
     .message-data {
@@ -289,6 +392,9 @@ export default {
         .date {
             color: #949494;
             font-style: italic;
+            span {
+                cursor:pointer;
+            }
         }
         .title {
             color: #949494;
