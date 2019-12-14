@@ -14,7 +14,7 @@ class Chat extends Model
     public $online = false;
 
     protected function getIsNewMessageAttribute() {
-        $participant = ParticipantChat::where('chat_id', $this->id)->where('user_id', Auth::User()->id)->first();        
+        $participant = ParticipantChat::where('chat_id', $this->id)->where('user_id', Auth::User()->id)->first();
         $this->isNewMessage = !$participant->is_read;
         return $this->isNewMessage;
     }

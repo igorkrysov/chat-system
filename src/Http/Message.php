@@ -55,7 +55,10 @@ class Message extends Model
             $messages[$key]->createdAt = $message->created_at;
         }
 
-        ParticipantChat::where('chat_id', $chatId)->where('user_id', Auth::User()->id)->update(['is_read' => true]);
+        $participant = ParticipantChat::where('chat_id', $chatId)->where('user_id', Auth::User()->id)->first();
+        $participant->is_read = true;
+        $participant->save();
+
         return $messages;
     }
 
