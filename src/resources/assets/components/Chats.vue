@@ -304,10 +304,13 @@ export default {
                 });
         },
         listen() {
-            console.log("listen")
-            Echo.join('chat.' + this.userId)
-                .listen('NewMessage', (e) => {
-                    if (e.messsage.chat_id == this.activeChatId) {
+            
+            let channel = 'chat.' + this.userId;
+            console.log("joining: " + channel)
+            Echo.join(channel)
+                .listen("NewMessage", (e) => {
+                    console.log(e.message)
+                    if (e.message.chat_id == this.activeChatId) {
                         this.messages.push(e.message);
                     } else {
                         this.chats.forEach(element => {
@@ -318,6 +321,7 @@ export default {
                     }
                         
                 })
+                // presence-channel.12, Event: App\Events\NewMessage
         }
     }
 }

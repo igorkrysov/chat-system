@@ -3,7 +3,8 @@
 namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
-use Techsmart\Chat\Http\Events\NewMessage;
+// use Techsmart\Chat\Http\Events\NewMessage;
+use App\Events\NewMessage;
 use Auth;
 use DB;
 
@@ -65,6 +66,10 @@ class Message extends Model
 
     public static function addMessage($chatId, $from, $message) {
         $message = self::create(['chat_id' => $chatId, 'src_id' => $from, 'message' => $message]);
+        $message->load('files');
+        $message->load('user');
+        $message->files;
+        $message->user;
         broadcast(new NewMessage($message))->toOthers();
 
         return $message;

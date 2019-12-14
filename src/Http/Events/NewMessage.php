@@ -10,6 +10,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Techsmart\Chat\Http\Message;
+use Illuminate\Support\Facades\Log;
 use App\User;
 
 class NewMessage implements ShouldBroadcast
@@ -30,10 +31,15 @@ class NewMessage implements ShouldBroadcast
      */
     public function __construct(Message $message)
     {
+        Log::info('construct_: ');
+        
         $this->message = $message;
+        $this->message->user;
+        $this->message->files;
         $this->message->createdAt = $message->created_at;
         $this->createdAt = $message->created_at;
-        $this->chatId = $message->chat_id;      
+        $this->chatId = $message->chat_id;
+        Log::info('construct_: end');
     }
 
     /**
@@ -44,8 +50,9 @@ class NewMessage implements ShouldBroadcast
     public function broadcastOn()
     {
         $channels = [];
-        foreach ($this->message->chat->participants as $user) {
-            $channels[] = new PresenceChannel('chat.' . $user->id);
+        foreach ($this->message->chat->participants as $participant) {
+            $channels[] = new PresenceChannel('chat.' . $participant->user_id);
+            Log::info('chat. . $user->id: ' . 'chat.' . $participant->user_id);
         }
 
         return $channels;

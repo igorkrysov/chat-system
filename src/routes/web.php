@@ -34,6 +34,4 @@ Route::group(['middleware' => ['web', 'auth']], function () {
 });
 
 
-Route::get("/test", function() {
-    echo "TEST<br>";
-});
+// Route::get("/test/{chatId}", "Techsmart\Chat\Http\Controllers\ChatController@test");

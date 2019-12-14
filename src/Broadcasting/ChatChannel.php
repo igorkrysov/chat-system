@@ -20,7 +20,7 @@ class ChatChannel
      * Authenticate the user's access to the channel.
      *
      * @param  \App\User  $user
-     * @param  \App\Order  $order
+     * @param  $userId
      * @return array|bool
      */
     public function join(User $user, $userId)

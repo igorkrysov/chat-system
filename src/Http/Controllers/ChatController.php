@@ -130,4 +130,10 @@ class ChatController {
 
         return response()->json(['status' => true]);
     }
+
+
+    public function test($chatId) {
+        $chat = Chat::find($chatId);
+        dd($chat->participants);
+    }
 }

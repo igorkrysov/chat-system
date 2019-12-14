@@ -35,7 +35,7 @@ class Chat extends Model
     }
 
     public function participants() {
-        return $this->hasMany('Techsmart\Chat\Http\ParticipantChat', 'id', 'chat_id');
+        return $this->hasMany('Techsmart\Chat\Http\ParticipantChat', 'chat_id', 'id');
     }
 
     public static function createChat($name, $participants, $type, $adminId) {
