@@ -3,8 +3,8 @@
 namespace Techsmart\Chat\Http;
 
 use Illuminate\Database\Eloquent\Model;
-// use Techsmart\Chat\Http\Events\NewMessage;
-use App\Events\NewMessage;
+use Techsmart\Chat\Http\Events\NewMessage;
+// use App\Events\NewMessage;
 use Auth;
 use DB;
 

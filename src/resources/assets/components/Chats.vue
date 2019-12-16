@@ -308,6 +308,9 @@ export default {
             let channel = 'chat.' + this.userId;
             console.log("joining: " + channel)
             Echo.join(channel)
+                //Techsmart\\Chat\\Http\\Events\\NewMessage
+                //in bootstrap.js
+                // namespace: ''
                 .listen("NewMessage", (e) => {
                     console.log(e.message)
                     if (e.message.chat_id == this.activeChatId) {
