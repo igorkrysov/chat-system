@@ -41,3 +41,6 @@ window.Echo = new Echo({
 
 namespace:''
 in Chats.vue in listen use Techsmart\\Chat\\Http\\Events\\NewMessage instead NewMessage 
+OR
+in Chats.vue
+.listen("\\Techsmart\\Chat\\Http\\Events\\NewMessage", (e) => {

@@ -311,7 +311,7 @@ export default {
                 //Techsmart\\Chat\\Http\\Events\\NewMessage
                 //in bootstrap.js
                 // namespace: ''
-                .listen("NewMessage", (e) => {
+                .listen("\\Techsmart\\Chat\\Http\\Events\\NewMessage", (e) => {
                     console.log(e.message)
                     if (e.message.chat_id == this.activeChatId) {
                         this.messages.push(e.message);
