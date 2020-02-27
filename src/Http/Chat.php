@@ -81,7 +81,7 @@ class Chat extends Model
         return $message;
     }
     
-    public static function findMessage($search) {
+    public static function findChatWithMessage($search) {
         $search = $search;
         $chats = Chat::chats();
         $chatIds = $chats->pluck(['id']);

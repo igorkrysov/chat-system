@@ -36,7 +36,6 @@ class Message extends Model
 
         $message = $chat->addMessage(Auth::User()->id, $message);
 
-        $message->createdAt = $message->created_at;
         if (isset($files)) {
             foreach ($files as $file) {
                 MessageFile::setMessageId($file['id'], $message->id);
@@ -51,9 +50,6 @@ class Message extends Model
 
     public static function loadMessages($chatId) {
         $messages = self::where('chat_id', $chatId)->with(['files', 'user'])->get();
-        foreach ($messages as $key => $message) {
-            $messages[$key]->createdAt = $message->created_at;
-        }
 
         $participant = ParticipantChat::where('chat_id', $chatId)->where('user_id', Auth::User()->id)->first();
         $participant->is_read = true;

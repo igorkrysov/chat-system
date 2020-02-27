@@ -20,28 +20,20 @@ class ChatController {
     public function loadUsers(Request $request) { 
         $users = User::where('id', '!=', Auth::User()->id)->get();
 
-        if ($request->ajax()) {
-            return response()->json(['status' => true, 'users' => $users]);
-        }
-
+        return response()->json(['status' => true, 'users' => $users]);
     }
 
     public function loadChats(Request $request) { 
         $chats = Chat::chats();
 
-        if ($request->ajax()) {
-            return response()->json(['status' => true, 'chats' => $chats]);
-        }
+        return response()->json(['status' => true, 'chats' => $chats]);        
     }
 
     public function loadMessages(Request $request, $chatId) {
         $messages = Message::loadMessages($chatId);
 
-        if ($request->ajax()) {
-            return response()->json(['status' => true, 'messages' => $messages]);
-        }
-
-        return view("chat::messages", ['messages' => $messages]);
+        return response()->json(['status' => true, 'messages' => $messages]);
+        
     }
     
     public function sendMessage(Request $request) {
@@ -58,11 +50,7 @@ class ChatController {
 
         $message = Message::sendMessage($request->chatId, $request->message, $request->files_);
 
-        if ($request->ajax()) {
-            return response()->json(['status' => true, 'message' => $message]);
-        }
-
-        return response()->json(['status' => true, 'message' => $message, 'createdAt' => $message->created_at]);
+        return response()->json(['status' => true, 'message' => $message]);
     }
 
     public function uploaFile(Request $request) {        
@@ -99,12 +87,12 @@ class ChatController {
         return response()->json(['status' => true]);
     }
 
-    public function findMessage(Request $request) {
+    public function findChatWithMessage(Request $request) {
         $request->validate([
             'search' => 'required'
         ]);
 
-        $chats = Chat::findMessage($request->search);
+        $chats = Chat::findChatWithMessage($request->search);
 
         return response()->json(['chats' => $chats]);
     }
@@ -129,11 +117,5 @@ class ChatController {
         Chat::blockChat($chatId);
 
         return response()->json(['status' => true]);
-    }
-
-
-    public function test($chatId) {
-        $chat = Chat::find($chatId);
-        dd($chat->participants);
     }
 }

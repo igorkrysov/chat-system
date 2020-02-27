@@ -31,15 +31,10 @@ class NewMessage implements ShouldBroadcast
      */
     public function __construct(Message $message)
     {
-        Log::info('construct_: ');
-        
         $this->message = $message;
         $this->message->user;
         $this->message->files;
-        $this->message->createdAt = $message->created_at;
-        $this->createdAt = $message->created_at;
-        $this->chatId = $message->chat_id;
-        Log::info('construct_: end');
+        $this->chatId = $message->chat_id;        
     }
 
     /**
